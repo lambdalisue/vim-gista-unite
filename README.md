@@ -1,6 +1,8 @@
 vim-gista-unite
 ===============================================================================
 
+![Screenshot](img/screenshot.png)
+
 *vim-gista-unite* is a harmonic plugin of [vim-gista](https://github.com/lambdalisue/vim-gista) which allow users to use [unite.vim](https://github.com/Shougo/unite.vim) interface to list gists.
 
 Install
