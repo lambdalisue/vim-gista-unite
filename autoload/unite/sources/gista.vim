@@ -79,18 +79,21 @@ let s:source = {
 function! s:source.gather_candidates(args, context) abort
   if a:context.is_redraw
     try
-      call a:context.source__session.enter()
-      let a:context.source__index =
-            \ gista#command#list#call(a:context.source__options)
-      let client = gista#client#get()
-      let username = client.get_authorized_username()
-      let a:context.source__message = printf('%s:%s:%s',
-            \ client.apiname,
-            \ empty(username) ? 'ANONYMOUS' : username,
-            \ empty(a:context.source__options.lookup)
-            \   ? empty(username) ? 'public' : username
-            \   : a:context.source__options.lookup,
-            \)
+      if a:context.source__session.enter()
+        let a:context.source__index =
+              \ gista#command#list#call(a:context.source__options)
+        let client = gista#client#get()
+        let username = client.get_authorized_username()
+        let a:context.source__message = printf('%s:%s:%s',
+              \ client.apiname,
+              \ empty(username) ? 'ANONYMOUS' : username,
+              \ empty(a:context.source__options.lookup)
+              \   ? empty(username) ? 'public' : username
+              \   : a:context.source__options.lookup,
+              \)
+      else
+        return
+      endif
     finally
       call a:context.source__session.exit()
     endtry
@@ -132,18 +135,21 @@ function! s:source.hooks.on_init(args, context) abort
   let a:context.source__session =
         \ gista#client#session(a:context.source__options)
   try
-    call a:context.source__session.enter()
-    let a:context.source__index =
-          \ gista#command#list#call(a:context.source__options)
-    let client = gista#client#get()
-    let username = client.get_authorized_username()
-    let a:context.source__message = printf('%s:%s:%s',
-          \ client.apiname,
-          \ empty(username) ? 'ANONYMOUS' : username,
-          \ empty(a:context.source__options.lookup)
-          \   ? empty(username) ? 'public' : username
-          \   : a:context.source__options.lookup,
-          \)
+    if a:context.source__session.enter()
+      let a:context.source__index =
+            \ gista#command#list#call(a:context.source__options)
+      let client = gista#client#get()
+      let username = client.get_authorized_username()
+      let a:context.source__message = printf('%s:%s:%s',
+            \ client.apiname,
+            \ empty(username) ? 'ANONYMOUS' : username,
+            \ empty(a:context.source__options.lookup)
+            \   ? empty(username) ? 'public' : username
+            \   : a:context.source__options.lookup,
+            \)
+    else
+      return
+    endif
   finally
     call a:context.source__session.exit()
   endtry
