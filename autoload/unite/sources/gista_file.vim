@@ -33,14 +33,14 @@ endfunction
 function! s:create_candidate(entry, filename, contents) abort
   let options = {
         \ 'gist': a:entry,
-        \ 'gistid': a:entry.id,
         \ 'filename': a:filename,
+        \ 'verbose': 0,
         \}
   let path = gista#command#open#bufname(options)
-  let uri  = gista#command#browse#call(options)
+  let [uri, gistid, filename] = gista#command#browse#call(options)
   let candidate = {
-        \ 'word': s:format_entry_word(a:filename, a:contents),
-        \ 'abbr': s:format_entry_abbr(a:filename, a:contents),
+        \ 'word': s:format_entry_word(filename, a:contents),
+        \ 'abbr': s:format_entry_abbr(filename, a:contents),
         \ 'kind': 'gista/file',
         \ 'source__entry': a:entry,
         \ 'source__filename': a:filename,
@@ -58,23 +58,18 @@ let s:source = {
       \ 'hooks': {},
       \}
 function! s:source.gather_candidates(args, context) abort
-  if has_key(a:context, 'action__entry')
-    let gist = a:context.action__entry
-  else
-    let options = s:parse_unite_args(a:args)
-    let gist = gista#command#json#call(options)
-  endif
+  let entry = a:context.source__entry
   let client = gista#client#get()
   let username = client.get_authorized_username()
   call unite#print_source_message(printf('%s:%s:%s',
         \ client.apiname,
         \ empty(username) ? 'ANONYMOUS' : username,
-        \ gist.public ? gist.id : s:PRIVATE_GISTID,
+        \ entry.public ? entry.id : s:PRIVATE_GISTID,
         \), self.name
         \)
   let candidates = map(
-        \ items(gist.files),
-        \ 's:create_candidate(gist, v:val[0], v:val[1])'
+        \ items(entry.files),
+        \ 's:create_candidate(entry, v:val[0], v:val[1])'
         \)
   return candidates
 endfunction
@@ -101,6 +96,12 @@ function! s:source.complete(args, context, arglead, cmdline, cursorpos) abort
   return uniq(candidates)
 endfunction
 function! s:source.hooks.on_init(args, context) abort
+  if has_key(a:context, 'action__entry')
+    let a:context.source__entry = a:context.action__entry
+  else
+    let [gist, gistid] = gista#command#json#call(s:parse_unite_args(a:args))
+    let a:context.source__entry = gist
+  endif
 endfunction
 function! s:source.hooks.on_close(args, context) abort
 endfunction
