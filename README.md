@@ -29,7 +29,7 @@ NeoBundle 'lambdalisue/vim-gista-unite', {
     \   'lambdalisue/vim-gista'
     \   'Shougo/unite.vim'
     \ ],
-    \ 'on_unite': ['gista', 'gista/file'],
+    \ 'on_unite': ['gista', 'gista/file', 'gista/commit'],
     \}
 ```
 
@@ -38,7 +38,7 @@ Or install the repository into your `runtimepath` manually.
 
 Usage
 -------------------------------------------------------------------------------
-It provides `gista` and `gista/file` unite sources. Use these like:
+It provides `gista`, `gista/file`, and `gista/commit` unite sources. Use these like:
 
 ```
 :Unite gista
@@ -50,7 +50,14 @@ It provides `gista` and `gista/file` unite sources. Use these like:
 :Unite gista/file:{GISTID}
 :Unite gista/file:{GISTID}:{USERNAME}
 :Unite gista/file:{GISTID}:{USERNAME}:{APINAME}
+
+:Unite gista/commit
+:Unite gista/commit:{GISTID}
+:Unite gista/commit:{GISTID}:{USERNAME}
+:Unite gista/commit:{GISTID}:{USERNAME}:{APINAME}
 ```
+
+Or select 'narrow' or 'commit' action in `gista` source to list files or commits of a particular gist.
 
 License
 -------------------------------------------------------------------------------
