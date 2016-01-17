@@ -23,7 +23,6 @@ let s:actions = s:kind.action_table
 
 let s:actions.commit = {}
 let s:actions.commit.description = 'show commits of the selected gist'
-let s:actions.commit.is_quit = 0
 let s:actions.commit.is_start = 1
 function! s:actions.commit.func(candidate) abort
   let [gist, gistid] = gista#command#json#call({
@@ -31,12 +30,11 @@ function! s:actions.commit.func(candidate) abort
         \})
   let context = {}
   let context.action__entry = gist
-  call unite#start_temporary([['gista/commit']], context)
+  call unite#start_script([['gista/commit']], context)
 endfunction
 
 let s:actions.narrow = {}
 let s:actions.narrow.description = 'show files of the selected gist'
-let s:actions.narrow.is_quit = 0
 let s:actions.narrow.is_start = 1
 function! s:actions.narrow.func(candidate) abort
   let [gist, gistid] = gista#command#json#call({
@@ -44,7 +42,7 @@ function! s:actions.narrow.func(candidate) abort
         \})
   let context = {}
   let context.action__entry = gist
-  call unite#start_temporary([['gista/file']], context)
+  call unite#start_script([['gista/file']], context)
 endfunction
 
 let s:actions.open = {}
