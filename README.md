@@ -18,16 +18,16 @@ Plug 'lambdalisue/vim-gista-unite'
 " neobundle.vim
 NeoBundle 'lambdalisue/vim-gista-unite', {
     \ 'depends': [
-    \   'lambdalisue/vim-gista'
-    \   'Shougo/unite.vim'
+    \   'lambdalisue/vim-gista',
+    \   'Shougo/unite.vim',
     \ ],
     \}
 
 " neobundle.vim (Lazy)
 NeoBundle 'lambdalisue/vim-gista-unite', {
     \ 'depends': [
-    \   'lambdalisue/vim-gista'
-    \   'Shougo/unite.vim'
+    \   'lambdalisue/vim-gista',
+    \   'Shougo/unite.vim',
     \ ],
     \ 'on_unite': ['gista', 'gista/file', 'gista/commit'],
     \}
