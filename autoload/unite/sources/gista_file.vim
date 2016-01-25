@@ -1,8 +1,3 @@
-let s:save_cpo = &cpo
-set cpo&vim
-
-let s:V = gista#vital()
-let s:D = s:V.import('Data.Dict')
 let s:PRIVATE_GISTID = repeat('*', 20)
 
 function! s:parse_unite_args(args) abort
@@ -37,16 +32,16 @@ function! s:create_candidate(entry, filename, contents) abort
         \ 'verbose': 0,
         \}
   let path = gista#command#open#bufname(options)
-  let [uri, gistid, filename] = gista#command#browse#call(options)
+  let result = gista#command#browse#call(options)
   let candidate = {
-        \ 'word': s:format_entry_word(filename, a:contents),
-        \ 'abbr': s:format_entry_abbr(filename, a:contents),
+        \ 'word': s:format_entry_word(a:filename, a:contents),
+        \ 'abbr': s:format_entry_abbr(a:filename, a:contents),
         \ 'kind': 'gista/file',
         \ 'source__entry': a:entry,
         \ 'source__filename': a:filename,
         \ 'action__text': path,
         \ 'action__path': path,
-        \ 'action__uri': uri,
+        \ 'action__uri': empty(result) ? '' : result.url,
         \}
   return candidate
 endfunction
@@ -99,8 +94,8 @@ function! s:source.hooks.on_init(args, context) abort
   if has_key(a:context, 'action__entry')
     let a:context.source__entry = a:context.action__entry
   else
-    let [gist, gistid] = gista#command#json#call(s:parse_unite_args(a:args))
-    let a:context.source__entry = gist
+    let result = gista#command#json#call(s:parse_unite_args(a:args))
+    let a:context.source__entry = result.gist
   endif
 endfunction
 function! s:source.hooks.on_close(args, context) abort
@@ -121,7 +116,3 @@ function! unite#sources#gista_file#define() abort
   return s:source
 endfunction
 call unite#define_source(s:source)
-
-let &cpo = s:save_cpo
-unlet! s:save_cpo
-" vim:set et ts=2 sts=2 sw=2 tw=0 fdm=marker:

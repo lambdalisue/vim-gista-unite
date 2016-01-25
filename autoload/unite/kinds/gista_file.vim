@@ -1,8 +1,5 @@
-let s:save_cpo = &cpo
-set cpo&vim
-
 let s:V = gista#vital()
-let s:D = s:V.import('Data.Dict')
+let s:Dict = s:V.import('Data.Dict')
 
 let s:orig = unite#kinds#file_base#define()
 let s:kind = {
@@ -13,7 +10,7 @@ let s:kind = {
       \ ],
       \ 'default_action': 'open',
       \ 'alias_table' : { 'edit' : 'open' },
-      \ 'action_table': s:D.pick(s:orig.action_table, [
+      \ 'action_table': s:Dict.pick(s:orig.action_table, [
       \   'preview',
       \   'read',
       \   'diff',
@@ -70,7 +67,3 @@ function! unite#kinds#gista_file#define() abort
   return s:kind
 endfunction
 call unite#define_kind(s:kind)
-
-let &cpo = s:save_cpo
-unlet! s:save_cpo
-" vim:set et ts=2 sts=2 sw=2 tw=0 fdm=marker:

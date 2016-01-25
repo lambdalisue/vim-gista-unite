@@ -1,8 +1,5 @@
-let s:save_cpo = &cpo
-set cpo&vim
-
 let s:V = gista#vital()
-let s:D = s:V.import('Data.Dict')
+let s:Dict = s:V.import('Data.Dict')
 
 let s:orig = unite#kinds#file_base#define()
 let s:kind = {
@@ -13,7 +10,7 @@ let s:kind = {
       \ ],
       \ 'default_action': 'narrow',
       \ 'alias_table' : { 'edit' : 'narrow' },
-      \ 'action_table': s:D.pick(s:orig.action_table, [
+      \ 'action_table': s:Dict.pick(s:orig.action_table, [
       \   'preview',
       \   'read',
       \   'diff',
@@ -25,11 +22,11 @@ let s:actions.commit = {}
 let s:actions.commit.description = 'show commits of the selected gist'
 let s:actions.commit.is_start = 1
 function! s:actions.commit.func(candidate) abort
-  let [gist, gistid] = gista#command#json#call({
+  let result = gista#command#json#call({
         \ 'gist': a:candidate.source__entry,
         \})
   let context = {}
-  let context.action__entry = gist
+  let context.action__entry = result.gist
   call unite#start_script([['gista/commit']], context)
 endfunction
 
@@ -37,11 +34,11 @@ let s:actions.narrow = {}
 let s:actions.narrow.description = 'show files of the selected gist'
 let s:actions.narrow.is_start = 1
 function! s:actions.narrow.func(candidate) abort
-  let [gist, gistid] = gista#command#json#call({
+  let result = gista#command#json#call({
         \ 'gist': a:candidate.source__entry,
         \})
   let context = {}
-  let context.action__entry = gist
+  let context.action__entry = result.gist
   call unite#start_script([['gista/file']], context)
 endfunction
 
@@ -122,7 +119,3 @@ function! unite#kinds#gista#define() abort
   return s:kind
 endfunction
 call unite#define_kind(s:kind)
-
-let &cpo = s:save_cpo
-unlet! s:save_cpo
-" vim:set et ts=2 sts=2 sw=2 tw=0 fdm=marker:

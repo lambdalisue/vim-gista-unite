@@ -1,10 +1,3 @@
-let s:save_cpo = &cpo
-set cpo&vim
-
-let s:V = gista#vital()
-let s:S = s:V.import('Data.String')
-let s:D = s:V.import('Data.Dict')
-
 let s:CACHE_FORCED = 2
 let s:PRIVATE_GISTID = repeat('*', 20)
 
@@ -54,7 +47,7 @@ function! s:create_candidate(entry, context) abort
         \ 'verbose': 0,
         \}
   let path = gista#command#json#bufname(options)
-  let [uri, gistid, filename] = gista#command#browse#call(options)
+  let result = gista#command#browse#call(options)
   let candidate = {
         \ 'kind': 'gista/commit',
         \ 'word': s:format_entry_word(a:entry, a:context),
@@ -62,7 +55,7 @@ function! s:create_candidate(entry, context) abort
         \ 'source__entry': a:entry,
         \ 'action__text': a:entry.id,
         \ 'action__path': path,
-        \ 'action__uri': uri,
+        \ 'action__uri': empty(result) ? '' : result.url,
         \}
   return candidate
 endfunction
@@ -71,15 +64,18 @@ function! s:gather_candidates(options) abort
   let session = gista#client#session(options)
   try
     if session.enter()
-      let [entries, gistid] = gista#command#commits#call(options)
+      let result = gista#command#commits#call(options)
+      if empty(result)
+        return [[], '']
+      endif
       let client = gista#client#get()
       let username = client.get_authorized_username()
       let message = printf('%s:%s:%s',
             \ client.apiname,
             \ empty(username) ? 'anonymous': username,
-            \ gistid,
+            \ result.gistid,
             \)
-      return [entries, message]
+      return [result.entries, message]
     endif
   finally
     call session.exit()
@@ -132,8 +128,8 @@ function! s:source.hooks.on_init(args, context) abort
   if has_key(a:context, 'action__entry')
     let a:context.source__options.gist = a:context.action__entry
   else
-    let [gist, gistid] = gista#command#json#call(s:parse_unite_args(a:args))
-    let a:context.source__options.gist = gist
+    let result = gista#command#json#call(s:parse_unite_args(a:args))
+    let a:context.source__options.gist = result.gist
   endif
 endfunction
 function! s:source.hooks.on_close(args, context) abort
@@ -166,9 +162,3 @@ function! unite#sources#gista_commit#define() abort
   return s:source
 endfunction
 call unite#define_source(s:source)
-
-
-
-let &cpo = s:save_cpo
-unlet! s:save_cpo
-" vim:set et ts=2 sts=2 sw=2 tw=0 fdm=marker:
