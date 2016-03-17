@@ -13,36 +13,39 @@ function! s:parse_unite_args(args) abort
         \}
   return options
 endfunction
-function! s:format_entry_word(entry, context) abort
+
+function! s:format_commit_word(commit, context) abort
   return join([
-        \ a:entry.version,
-        \ a:entry.committed_at,
-        \ join(keys(a:entry.files), ', '),
+        \ a:commit.version,
+        \ a:commit.committed_at,
+        \ join(keys(a:commit.files), ', '),
         \])
 endfunction
-function! s:format_entry_abbr(entry, context) abort
+
+function! s:format_commit_abbr(commit, context) abort
   let datetime = substitute(
-        \ a:entry.committed_at,
+        \ a:commit.committed_at,
         \ '\v\d{2}(\d{2})-(\d{2})-(\d{2})T(\d{2}:\d{2}:\d{2})Z',
         \ '\1/\2/\3(\4)',
         \ ''
         \)
-  let fetched = get(a:entry, '_gista_fetched')  ? '=' : '-'
+  let fetched = get(a:commit, '_gista_fetched')  ? '=' : '-'
   let prefix = fetched . ' ' . datetime . ' '
-  let suffix = '   ' . a:entry.version
-  if get(a:entry.change_status, 'total', 0)
+  let suffix = '   ' . a:commit.version
+  if get(a:commit.change_status, 'total', 0)
     let change_status = join([
-          \ printf('%d additions', a:entry.change_status.additions),
-          \ printf('%d deletions', a:entry.change_status.deletions),
+          \ printf('%d additions', a:commit.change_status.additions),
+          \ printf('%d deletions', a:commit.change_status.deletions),
           \], ', ')
   else
     let change_status = 'No changes'
   endif
   return prefix . change_status . suffix
 endfunction
-function! s:create_candidate(entry, context) abort
+
+function! s:create_candidate(commit, context) abort
   let options = {
-        \ 'gist': a:entry,
+        \ 'gist': a:commit,
         \ 'cache': s:CACHE_FORCED,
         \ 'verbose': 0,
         \}
@@ -50,21 +53,26 @@ function! s:create_candidate(entry, context) abort
   let result = gista#command#browse#call(options)
   let candidate = {
         \ 'kind': 'gista/commit',
-        \ 'word': s:format_entry_word(a:entry, a:context),
-        \ 'abbr': s:format_entry_abbr(a:entry, a:context),
-        \ 'source__entry': a:entry,
-        \ 'action__text': a:entry.id,
+        \ 'word': s:format_commit_word(a:commit, a:context),
+        \ 'abbr': s:format_commit_abbr(a:commit, a:context),
+        \ 'action__commit': a:commit,
+        \ 'action__text': a:commit.id,
         \ 'action__path': path,
         \ 'action__uri': empty(result) ? '' : result.url,
         \}
   return candidate
 endfunction
-function! s:gather_candidates(options) abort
-  let options = extend({}, a:options)
-  let session = gista#client#session(options)
+
+function! s:gather_candidates(args, context) abort
+  let session = gista#client#session({
+        \ 'apiname': a:context.source__options.apiname,
+        \ 'username': a:context.source__options.username,
+        \})
   try
     if session.enter()
-      let result = gista#command#commits#call(options)
+      let result = gista#command#commits#call({
+            \ 'gist': a:context.source__gist,
+            \})
       if empty(result)
         return [[], '']
       endif
@@ -90,9 +98,9 @@ let s:source = {
       \}
 function! s:source.gather_candidates(args, context) abort
   if a:context.is_redraw || !has_key(a:context, 'source_candidates')
-    let [entries, message] = s:gather_candidates(a:context.source__options)
+    let [commits, message] = s:gather_candidates(a:args, a:context)
     let a:context.source__candidates = map(
-          \ entries,
+          \ commits,
           \ 's:create_candidate(v:val, a:context)'
           \)
     call unite#print_source_message(printf('%s [%d]',
@@ -101,6 +109,7 @@ function! s:source.gather_candidates(args, context) abort
   endif
   return a:context.source__candidates
 endfunction
+
 function! s:source.complete(args, context, arglead, cmdline, cursorpos) abort
   if a:arglead =~# '^.\+:.\+:.*$'
     let candidates = gista#option#complete_apiname(
@@ -123,17 +132,20 @@ function! s:source.complete(args, context, arglead, cmdline, cursorpos) abort
   endif
   return uniq(candidates)
 endfunction
+
 function! s:source.hooks.on_init(args, context) abort
   let a:context.source__options = s:parse_unite_args(a:args)
-  if has_key(a:context, 'action__entry')
-    let a:context.source__options.gist = a:context.action__entry
+  if has_key(a:context, 'source__gist')
+    " NOTE:
+    " 'source__gist' might be a partial instance so make sure the instance
+    " is a complete instance
+    let result = gista#command#json#call({ 'gist': a:context.source__gist })
   else
-    let result = gista#command#json#call(s:parse_unite_args(a:args))
-    let a:context.source__options.gist = result.gist
+    let result = gista#command#json#call(a:context.source__options)
   endif
+  let a:context.source__gist = result.gist
 endfunction
-function! s:source.hooks.on_close(args, context) abort
-endfunction
+
 function! s:source.hooks.on_syntax(args, context) abort
   call gista#command#commits#define_highlights()
   highlight default link uniteSource__GistaGistVersion GistaGistVersion

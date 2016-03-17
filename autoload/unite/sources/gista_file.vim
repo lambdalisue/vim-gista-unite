@@ -12,6 +12,7 @@ function! s:parse_unite_args(args) abort
         \}
   return options
 endfunction
+
 function! s:format_entry_word(filename, contents) abort
   return join([
         \ a:filename,
@@ -20,14 +21,16 @@ function! s:format_entry_word(filename, contents) abort
         \ a:contents.type
         \])
 endfunction
+
 function! s:format_entry_abbr(filename, contents) abort
   let size = a:contents.size . ' Bytes'
   let lang = a:contents.language
   return printf('%s [%s] (%s)', a:filename, lang, size)
 endfunction
-function! s:create_candidate(entry, filename, contents) abort
+
+function! s:create_candidate(gist, filename, contents) abort
   let options = {
-        \ 'gist': a:entry,
+        \ 'gist': a:gist,
         \ 'filename': a:filename,
         \ 'verbose': 0,
         \}
@@ -37,8 +40,8 @@ function! s:create_candidate(entry, filename, contents) abort
         \ 'word': s:format_entry_word(a:filename, a:contents),
         \ 'abbr': s:format_entry_abbr(a:filename, a:contents),
         \ 'kind': 'gista/file',
-        \ 'source__entry': a:entry,
-        \ 'source__filename': a:filename,
+        \ 'action__gist': a:gist,
+        \ 'action__filename': a:filename,
         \ 'action__text': path,
         \ 'action__path': path,
         \ 'action__uri': empty(result) ? '' : result.url,
@@ -52,22 +55,24 @@ let s:source = {
       \ 'syntax': 'uniteSource__GistaFile',
       \ 'hooks': {},
       \}
+
 function! s:source.gather_candidates(args, context) abort
-  let entry = a:context.source__entry
+  let gist = a:context.source__gist
   let client = gista#client#get()
   let username = client.get_authorized_username()
   call unite#print_source_message(printf('%s:%s:%s',
         \ client.apiname,
         \ empty(username) ? 'ANONYMOUS' : username,
-        \ entry.public ? entry.id : s:PRIVATE_GISTID,
+        \ gist.public ? gist.id : s:PRIVATE_GISTID,
         \), self.name
         \)
   let candidates = map(
-        \ items(entry.files),
-        \ 's:create_candidate(entry, v:val[0], v:val[1])'
+        \ items(gist.files),
+        \ 's:create_candidate(gist, v:val[0], v:val[1])'
         \)
   return candidates
 endfunction
+
 function! s:source.complete(args, context, arglead, cmdline, cursorpos) abort
   if a:arglead =~# '^.\+:.\+:.*$'
     let candidates = gista#option#complete_apiname(
@@ -90,16 +95,19 @@ function! s:source.complete(args, context, arglead, cmdline, cursorpos) abort
   endif
   return uniq(candidates)
 endfunction
+
 function! s:source.hooks.on_init(args, context) abort
-  if has_key(a:context, 'action__entry')
-    let a:context.source__entry = a:context.action__entry
+  if has_key(a:context, 'source__gist')
+    " NOTE:
+    " 'source__gist' might be a partial instance so make sure the instance
+    " is a complete instance
+    let result = gista#command#json#call({ 'gist': a:context.source__gist })
   else
     let result = gista#command#json#call(s:parse_unite_args(a:args))
-    let a:context.source__entry = result.gist
   endif
+  let a:context.source__gist = result.gist
 endfunction
-function! s:source.hooks.on_close(args, context) abort
-endfunction
+
 function! s:source.hooks.on_syntax(args, context) abort
   call gista#command#list#define_highlights()
   highlight default link uniteSource__GistaFileLang Special
@@ -115,4 +123,5 @@ endfunction
 function! unite#sources#gista_file#define() abort
   return s:source
 endfunction
+
 call unite#define_source(s:source)

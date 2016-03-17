@@ -19,7 +19,7 @@ let s:kind = {
 let s:actions = s:kind.action_table
 
 let s:actions.open = {}
-let s:actions.open.description = 'open the selected gist'
+let s:actions.open.description = 'open the selected commit'
 let s:actions.open.is_selectable = 1
 function! s:actions.open.func(candidates) abort
   for candidate in a:candidates
@@ -36,16 +36,13 @@ function! s:actions.open.func(candidates) abort
 endfunction
 
 let s:actions.narrow = {}
-let s:actions.narrow.description = 'narrow the selected gist'
+let s:actions.narrow.description = 'narrow the selected commit'
 let s:actions.narrow.is_quit = 0
 let s:actions.narrow.is_start = 1
 function! s:actions.narrow.func(candidate) abort
-  let result = gista#command#json#call({
-        \ 'gist': a:candidate.source__entry,
-        \})
   let context = {}
-  let context.action__entry = result.gist
-  call unite#start_temporary([['gista/file']], context)
+  let context.source__gist = a:candidate.action__gist
+  call unite#start_script([['gista/file']], context)
 endfunction
 
 

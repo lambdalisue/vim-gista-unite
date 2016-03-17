@@ -13,37 +13,40 @@ function! s:parse_unite_args(args) abort
         \}
   return options
 endfunction
-function! s:format_entry_word(entry, context) abort
+
+function! s:format_gist_word(gist, context) abort
   return join([
-        \ a:entry.id,
-        \ a:entry.description,
-        \ join(keys(a:entry.files), ', '),
+        \ a:gist.id,
+        \ a:gist.description,
+        \ join(keys(a:gist.files), ', '),
         \])
 endfunction
-function! s:format_entry_abbr(entry, context) abort
-  let gistid = a:entry.public
-        \ ? '[' . a:entry.id . ']'
+
+function! s:format_gist_abbr(gist, context) abort
+  let gistid = a:gist.public
+        \ ? '[' . a:gist.id . ']'
         \ : '[' . s:PRIVATE_GISTID . ']'
   let datetime = substitute(
-        \ a:entry.created_at,
+        \ a:gist.created_at,
         \ '\v\d{2}(\d{2})-(\d{2})-(\d{2})T(\d{2}:\d{2}:\d{2})Z',
         \ '\1/\2/\3(\4)',
         \ ''
         \)
-  let fetched = get(a:entry, '_gista_fetched')  ? '=' : '-'
-  let starred = get(a:entry, '_gista_is_starred') ? '*' : ' '
+  let fetched = get(a:gist, '_gista_fetched')  ? '=' : '-'
+  let starred = get(a:gist, '_gista_is_starred') ? '*' : ' '
   let prefix = fetched . ' ' . datetime . ' ' . starred . ' '
   let suffix = '   ' . gistid
-  let description = empty(a:entry.description)
-        \ ? join(keys(a:entry.files), ', ')
-        \ : a:entry.description
+  let description = empty(a:gist.description)
+        \ ? join(keys(a:gist.files), ', ')
+        \ : a:gist.description
   let description = substitute(description, "[\r\n]", ' ', 'g')
-  let description = printf('[%d] %s', len(a:entry.files), description)
+  let description = printf('[%d] %s', len(a:gist.files), description)
   return prefix . description . suffix
 endfunction
-function! s:create_candidate(entry, context) abort
+
+function! s:create_candidate(gist, context) abort
   let options = {
-        \ 'gist': a:entry,
+        \ 'gist': a:gist,
         \ 'cache': s:CACHE_FORCED,
         \ 'verbose': 0,
         \}
@@ -51,21 +54,26 @@ function! s:create_candidate(entry, context) abort
   let result = gista#command#browse#call(options)
   let candidate = {
         \ 'kind': 'gista',
-        \ 'word': s:format_entry_word(a:entry, a:context),
-        \ 'abbr': s:format_entry_abbr(a:entry, a:context),
-        \ 'source__entry': a:entry,
-        \ 'action__text': a:entry.id,
+        \ 'word': s:format_gist_word(a:gist, a:context),
+        \ 'abbr': s:format_gist_abbr(a:gist, a:context),
+        \ 'action__gist': a:gist,
+        \ 'action__text': a:gist.id,
         \ 'action__path': path,
         \ 'action__uri': empty(result) ? '' : result.url,
         \}
   return candidate
 endfunction
-function! s:gather_candidates(options) abort
-  let options = extend({}, a:options)
-  let session = gista#client#session(options)
+
+function! s:gather_candidates(args, context) abort
+  let session = gista#client#session({
+        \ 'apiname': a:context.source__options.apiname,
+        \ 'username': a:context.source__options.username,
+        \})
   try
     if session.enter()
-      let result = gista#command#list#call(options)
+      let result = gista#command#list#call({
+            \ 'lookup': a:context.source__options.lookup,
+            \})
       if empty(result)
         return [[], '']
       endif
@@ -91,9 +99,10 @@ let s:source = {
       \ 'syntax': 'uniteSource__Gista',
       \ 'hooks': {},
       \}
+
 function! s:source.gather_candidates(args, context) abort
   if a:context.is_redraw || !has_key(a:context, 'source_candidates')
-    let [index, message] = s:gather_candidates(a:context.source__options)
+    let [index, message] = s:gather_candidates(a:args, a:context)
     let a:context.source__candidates = map(
           \ index.entries,
           \ 's:create_candidate(v:val, a:context)'
@@ -104,6 +113,7 @@ function! s:source.gather_candidates(args, context) abort
   endif
   return a:context.source__candidates
 endfunction
+
 function! s:source.complete(args, context, arglead, cmdline, cursorpos) abort
   if a:arglead =~# '^.\+:.\+:.*$'
     let candidates = gista#option#complete_apiname(
@@ -126,11 +136,11 @@ function! s:source.complete(args, context, arglead, cmdline, cursorpos) abort
   endif
   return uniq(candidates)
 endfunction
+
 function! s:source.hooks.on_init(args, context) abort
   let a:context.source__options = s:parse_unite_args(a:args)
 endfunction
-function! s:source.hooks.on_close(args, context) abort
-endfunction
+
 function! s:source.hooks.on_syntax(args, context) abort
   call gista#command#list#define_highlights()
   highlight default link uniteSource__GistaGistIDPublic GistaGistIDPublic
@@ -158,4 +168,5 @@ endfunction
 function! unite#sources#gista#define() abort
   return s:source
 endfunction
+
 call unite#define_source(s:source)

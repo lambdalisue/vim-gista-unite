@@ -22,11 +22,8 @@ let s:actions.commit = {}
 let s:actions.commit.description = 'show commits of the selected gist'
 let s:actions.commit.is_start = 1
 function! s:actions.commit.func(candidate) abort
-  let result = gista#command#json#call({
-        \ 'gist': a:candidate.source__entry,
-        \})
   let context = {}
-  let context.action__entry = result.gist
+  let context.source__gist = a:candidate.action__gist
   call unite#start_script([['gista/commit']], context)
 endfunction
 
@@ -34,11 +31,8 @@ let s:actions.narrow = {}
 let s:actions.narrow.description = 'show files of the selected gist'
 let s:actions.narrow.is_start = 1
 function! s:actions.narrow.func(candidate) abort
-  let result = gista#command#json#call({
-        \ 'gist': a:candidate.source__entry,
-        \})
   let context = {}
-  let context.action__entry = result.gist
+  let context.source__gist = a:candidate.action__gist
   call unite#start_script([['gista/file']], context)
 endfunction
 
@@ -67,7 +61,7 @@ let s:actions.delete.is_selectable = 1
 function! s:actions.delete.func(candidates) abort
   for candidate in a:candidates
     let options = {
-          \ 'gist': candidate.source__entry,
+          \ 'gist': candidate.action__gist,
           \}
     call gista#command#delete#call(options)
   endfor
@@ -81,7 +75,7 @@ let s:actions.fork.is_selectable = 1
 function! s:actions.fork.func(candidates) abort
   for candidate in a:candidates
     let options = {
-          \ 'gist': candidate.source__entry,
+          \ 'gist': candidate.action__gist,
           \}
     call gista#command#fork#call(options)
   endfor
@@ -95,7 +89,7 @@ let s:actions.star.is_selectable = 1
 function! s:actions.star.func(candidates) abort
   for candidate in a:candidates
     let options = {
-          \ 'gist': candidate.source__entry,
+          \ 'gist': candidate.action__gist,
           \}
     call gista#command#star#call(options)
   endfor
@@ -109,7 +103,7 @@ let s:actions.unstar.is_selectable = 1
 function! s:actions.unstar.func(candidates) abort
   for candidate in a:candidates
     let options = {
-          \ 'gist': candidate.source__entry,
+          \ 'gist': candidate.action__gist,
           \}
     call gista#command#unstar#call(options)
   endfor

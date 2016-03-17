@@ -42,8 +42,8 @@ let s:actions.rename.is_invalidate_cache = 1
 let s:actions.rename.is_selectable = 0
 function! s:actions.rename.func(candidate) abort
   let options = {
-        \ 'gist': a:candidate.source__entry,
-        \ 'filename': a:candidate.source__filename,
+        \ 'gist': a:candidate.action__gist,
+        \ 'filename': a:candidate.action__filename,
         \}
   call gista#command#rename#call(options)
 endfunction
@@ -56,8 +56,8 @@ let s:actions.remove.is_selectable = 1
 function! s:actions.remove.func(candidates) abort
   for candidate in a:candidates
     let options = {
-          \ 'gist': candidate.source__entry,
-          \ 'filename': candidate.source__filename,
+          \ 'gist': candidate.action__gist,
+          \ 'filename': candidate.action__filename,
           \}
     call gista#command#remove#call(options)
   endfor
