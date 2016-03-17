@@ -33,6 +33,7 @@ Introduction			|vim-gista-unite-introduction|
 Install				|vim-gista-unite-install|
 Unite sources			|vim-gista-unite-sources|
 Unite kinds			|vim-gista-unite-kinds|
+Unite actions			|vim-gista-unite-actions|
 
 
 ==============================================================================
