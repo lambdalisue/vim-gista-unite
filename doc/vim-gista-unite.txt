@@ -1,0 +1,181 @@
+*vim-gista-unite.txt* A harmonic plugin of vim-gista for unite.vim
+
+Version: 1.0.0
+Author:  Alisue <lambdalisue@hashnote.net>	*vim-gista-unite-author*
+Support: Vim 7.4 and above
+License: MIT license  {{{
+	Copyright (c) 2014-2016 Alisue, hashnote.net
+
+	Permission is hereby granted, free of charge, to any person obtaining
+	a copy of this software and associated documentation files
+	(the "Software"), to deal in the Software without restriction,
+	including without limitation the rights to use, copy, modify, merge,
+	publish, distribute, sublicense, and/or sell copies of the Software,
+	and to permit persons to whom the Software is furnished to do so,
+	subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be
+	included in all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+}}}
+
+=============================================================================
+CONTENTS					*vim-gista-unite-contents*
+
+Introduction			|vim-gista-unite-introduction|
+Install				|vim-gista-unite-install|
+Unite sources			|vim-gista-unite-sources|
+Unite kinds			|vim-gista-unite-kinds|
+
+
+==============================================================================
+INTRODUCTION					*vim-gista-unite-introduction*
+
+*vim-gista-unite* is a harmonic plugin of lambdalisue/vim-gista which allow
+users to use Shougo/unite.vim interface to list gists.
+
+
+==============================================================================
+INSTALL						*vim-gista-unite-install*
+
+Use vim-plug (junegunn/vim-plug) or dein.vim (Shougo/dein.vim) as:
+>
+	" vim-plug
+	Plug 'Shougo/unite.vim'
+	Plug 'lambdalisue/vim-gista'
+	Plug 'lambdalisue/vim-gista-unite'
+
+	" dein.vim
+	call dein#add('Shougo/unite.vim')
+	call dein#add('lambdalisue/vim-gista')
+	call dein#add('lambdalisue/vim-gista-unite')
+
+	" dein.vim (lazy)
+	call dein#add('Shougo/unite.vim')
+	call dein#add('lambdalisue/vim-gista', {
+	  \ 'on_cmd': 'vim-gista',
+	  \})
+	call dein#add('lambdalisue/vim-gista-unite', {
+	  \ 'depends': 'vim-gista',
+	  \ 'on_source': 'unite.vim',
+	  \})
+<
+Or install the repository into your |runtimepath| manually.
+
+
+==============================================================================
+SOURCES					*vim-gista-unite-sources*
+
+					*unite-source-gista*
+gista		Nominates a gist as a candidate.
+		An alternative interface of *:Gista-list* in unite.vim.
+
+		Source arguments:
+		1. Lookup (optional)
+		2. Username (optional)
+		3. API name (optional)
+
+		See |unite-kind-gista| for available actions.
+
+					*unite-source-gista/commit*
+gista/commit	Nominate a commit in a particular gist as a candidate.
+		It is used from 'commit' action in |unite-kind-gista|.
+
+		Source arguments:
+		1. Gist ID (optional)
+		2. Username (optional)
+		3. API name (optional)
+
+		See |unite-kind-gista/commit| for available actions.
+
+					*unite-source-gista/file*
+gista/file	Nominate a file in a particular gist as a candidate.
+		It is used from 'narrow' action in |unite-kind-gista|.
+
+		Source arguments:
+		1. Gist ID (optional)
+		2. Username (optional)
+		3. API name (optional)
+
+		See |unite-kind-gista/file| for available actions.
+
+==============================================================================
+KINDS					*vim-gista-unite-kinds*
+
+					*unite-kind-gista*
+gista		An interface for operations of a gist. This kind inherits
+		openable, and uri so this requires the requirements of those.
+
+			action__gist		(Dictionary)	(Required)
+				A (partial) instance of a gist.
+			action__path		(String)	(Required)
+				A buffer name of a JSON content of a gist.
+			action__uri		(String)	(Required)
+				A URL of a gist.
+
+					*unite-kind-gista/commit*
+gista/commit	An interface for operations of a commit of a gist. This kind
+		inherits openable, and uri so this requires the requirements
+		of those.
+
+			action__commit		(Dictionary)	(Required)
+				A commit instance
+			action__text		(String)	(Required)
+				A commit ID (gist id + commit)
+			action__path		(String)	(Required)
+				A buffer name of a JSON content of a commit.
+			action__uri		(String)	(Required)
+				A URL of a commit.
+
+					*unite-kind-gista/file*
+gista/file	An interface for operations of a commit of a gist. This kind
+		inherits openable, and uri so this requires the requirements
+		of those.
+
+			action__gist		(Dictionary)	(Required)
+				A (partial) instance of a gist.
+			action__filename	(String)	(Required)
+				A filename of a file.
+			action__path		(String)	(Required)
+				A buffer name of a file.
+			action__uri		(String)	(Required)
+				A URL of a file.
+
+
+==============================================================================
+ACTIONS					*vim-gista-unite-actions*
+
+gista					*unite-action-gista*
+Open or operate a gist. This kind extends |unite-action-openable| and
+|unite-action-uri|.
+	narrow		Run |unite-source-gista/file| of the selected gist.
+	commit		Run |unite-source-gista/commit| of the selected gist.
+	open		Open a JSON content of the selected gist
+	delete		Delete the selected gist.
+	fork		Fork the selected gist.
+	star		Star the selected gist.
+	unstar		Unstart the selected gist.
+
+gista/commit				*unite-action-gista/commit*
+Open or operate a commit of a gist. This kind extends |unite-action-openable|
+and |unite-action-uri|.
+	narrow		Run |unite-source-gista/file| of the selected commit.
+	open		Open a JSON content of the selected commit.
+
+gista/file				*unite-action-gista/file*
+Open or operate a file in a gist. This kind extends |unite-action-openable| and
+|unite-action-uri|.
+	open		Open a file content of the selected file.
+	rename		Rename the selected file.
+	remove		Remove the selected file.
+
+
+==============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl:noet

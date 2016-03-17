@@ -1,5 +1,6 @@
 vim-gista-unite
 ===============================================================================
+![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg?style=flat-square) ![Support Vim 7.4 or above](https://img.shields.io/badge/support-Vim%207.4%20or%20above-yellowgreen.svg?style=flat-square) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE) [![Doc](https://img.shields.io/badge/doc-%3Ah%20vim--gista--unite-orange.svg?style=flat-square)](doc/vim-gista-unite.txt)
 
 ![Screenshot](img/screenshot.png)
 
@@ -7,7 +8,7 @@ vim-gista-unite
 
 Install
 -------------------------------------------------------------------------------
-Use [neobundle.vim](https://github.com/Shougo/neobundle.vim) or [vim-plug](https://github.com/junegunn/vim-plug) as:
+Use [vim-plug](https://github.com/junegunn/vim-plug) or [dein.vim](https://github.com/Shougo/dein.vim) as:
 
 ```vim
 " vim-plug
@@ -15,22 +16,20 @@ Plug 'Shougo/unite.vim'
 Plug 'lambdalisue/vim-gista'
 Plug 'lambdalisue/vim-gista-unite'
 
-" neobundle.vim
-NeoBundle 'lambdalisue/vim-gista-unite', {
-    \ 'depends': [
-    \   'lambdalisue/vim-gista',
-    \   'Shougo/unite.vim',
-    \ ],
-    \}
+" dein.vim
+call dein#add('Shougo/unite.vim')
+call dein#add('lambdalisue/vim-gista')
+call dein#add('lambdalisue/vim-gista-unite')
 
-" neobundle.vim (Lazy)
-NeoBundle 'lambdalisue/vim-gista-unite', {
-    \ 'depends': [
-    \   'lambdalisue/vim-gista',
-    \   'Shougo/unite.vim',
-    \ ],
-    \ 'on_unite': ['gista', 'gista/file', 'gista/commit'],
-    \}
+" dein.vim (lazy)
+call dein#add('Shougo/unite.vim')
+call dein#add('lambdalisue/vim-gista', {
+    \ 'on_cmd': 'vim-gista',
+    \})
+call dein#add('lambdalisue/vim-gista-unite', {
+    \ 'depends': 'vim-gista',
+    \ 'on_source': 'unite.vim',
+    \})
 ```
 
 Or install the repository into your `runtimepath` manually.
