@@ -76,7 +76,7 @@ SOURCES					*vim-gista-unite-sources*
 
 					*unite-source-gista*
 gista		Nominates a gist as a candidate.
-		An alternative interface of *:Gista-list* in unite.vim.
+		An alternative interface of |:Gista-list| in unite.vim.
 
 		Source arguments:
 		1. Lookup (optional)
