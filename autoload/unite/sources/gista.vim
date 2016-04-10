@@ -1,5 +1,5 @@
 let s:CACHE_FORCED = 2
-let s:PRIVATE_GISTID = repeat('*', 20)
+let s:PRIVATE_GISTID = repeat('*', 32)
 
 function! s:parse_unite_args(args) abort
   " Unite gista
@@ -149,9 +149,9 @@ function! s:source.hooks.on_syntax(args, context) abort
   highlight default link uniteSource__GistaDownloadedMarker GistaDownloadedMarker
   highlight default link uniteSource__GistaStarredMarker GistaStarredMarker
   highlight default link uniteSource__GistaDateTime GistaDateTime
-  syntax match uniteSource__GistaGistIDPublic /\[[a-zA-Z0-9_\-]\{,20}\%(\/[a-zA-Z0-9]\+\)\?\]$/
+  syntax match uniteSource__GistaGistIDPublic /\[[a-zA-Z0-9_\-]\{,32}\%(\/[a-zA-Z0-9]\+\)\?\]$/
         \ contained containedin=uniteSource__Gista
-  syntax match uniteSource__GistaGistIDPrivate /\[\*\{20}\]$/
+  syntax match uniteSource__GistaGistIDPrivate /\[\*\{32}\]$/
         \ contained containedin=uniteSource__Gista
   syntax match uniteSource__GistaMeta /[=\-] \d\{2}\/\d\{2}\/\d\{2}(\d\{2}:\d\{2}:\d\{2}) [ \*]/
         \ contained containedin=uniteSource__Gista

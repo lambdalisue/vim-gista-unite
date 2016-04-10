@@ -1,5 +1,5 @@
 let s:CACHE_FORCED = 2
-let s:PRIVATE_GISTID = repeat('*', 20)
+let s:PRIVATE_GISTID = repeat('*', 32)
 
 function! s:parse_unite_args(args) abort
   " Unite gista/commit
