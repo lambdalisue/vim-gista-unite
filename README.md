@@ -24,7 +24,7 @@ call dein#add('lambdalisue/vim-gista-unite')
 " dein.vim (lazy)
 call dein#add('Shougo/unite.vim')
 call dein#add('lambdalisue/vim-gista', {
-    \ 'on_cmd': 'vim-gista',
+    \ 'on_cmd': 'Gista',
     \})
 call dein#add('lambdalisue/vim-gista-unite', {
     \ 'depends': 'vim-gista',
